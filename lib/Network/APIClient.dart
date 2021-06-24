@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-
 import 'package:dio/dio.dart';
 
 import 'package:flutter/foundation.dart';
@@ -46,6 +43,7 @@ class APIClient implements BaseAPIClient {
     }
     config.baseUrl = options.baseUrl;
       try {
+
         final response = await instance?.fetch(config);
         if (response == null) {
           final error = ErrorResponse(
@@ -61,7 +59,6 @@ class APIClient implements BaseAPIClient {
           return Result.success(responseWrapper.response);
         }
       } on DioError catch (e) {
-        print(e);
         final responseData = e.response?.data;
         ResponseWrapper responseWrapper = configResponse(create == null ? null : create as Create<Decodable>, responseData);
         if (null is T) {

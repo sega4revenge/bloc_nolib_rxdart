@@ -2,19 +2,18 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_pattern/flutter_bloc_pattern.dart';
 import 'package:provider/provider.dart';
-import 'package:wallpaper/Config/Result.dart';
+import 'package:wallpaper/Base/BaseLoadingWidget.dart';
 import 'package:wallpaper/Model/Champion.dart';
+import 'package:wallpaper/Screen/DetailChampionScreen/DetailChampionRoute.dart';
 import 'package:wallpaper/Screen/ListChampionScreen/ListChampionBloc.dart';
 import 'package:wallpaper/Screen/ListChampionScreen/ListChampionState.dart';
-
 
 class ListChampionScreenPage extends StatefulWidget {
   ListChampionScreenPage({Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() {
+  ListChampionScreenState createState() {
     return ListChampionScreenState();
   }
 }
@@ -69,12 +68,12 @@ class ListChampionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RxStreamBuilder<ListChampionMessage>(
-      stream: bloc.listChampion,
-      builder: (context, state) {
+    return StreamBuilder<ListChampionMessage>(
+      stream: bloc.response,
+      builder: (context, stateData) {
+        var state = stateData.data;
         if (state is ListChampionSuccessMessage) {
           var data = state.listChampion;
-          print(data.length);
           return ListView.builder(
             itemCount: data.length,
             itemBuilder: (BuildContext context, int index) {
@@ -87,36 +86,17 @@ class ListChampionWidget extends StatelessWidget {
                   title: Text(champion.name),
                   subtitle: Text(champion.title),
                   onTap: () {
-                    // Navigator.push(context,
-                    //     CupertinoPageRoute(
-                    //         fullscreenDialog: false,
-                    //         builder: (context) => ChampionDetail.ChampionDetail(champion : asyncSnapshot.data[index])
-                    //     ));
+                    Navigator.pushNamed(
+                      context,
+                      DetailChampionRoute.routeId,
+                      arguments: DetailChampionRoute(champion.id),
+                    );
                   });
             },
           );
         } else {
+          print(state);
           return Text("Error");
-        }
-      },
-    );
-  }
-}
-
-class LoadingWidget extends StatelessWidget {
-  const LoadingWidget({Key? key, required this.bloc}) : super(key: key);
-
-  final ListChampionBloc bloc;
-
-  @override
-  Widget build(BuildContext context) {
-    return RxStreamBuilder<bool>(
-      stream: bloc.isLoading,
-      builder: (context, state) {
-        if (state) {
-          return Center(child: CircularProgressIndicator());
-        } else {
-          return Container();
         }
       },
     );

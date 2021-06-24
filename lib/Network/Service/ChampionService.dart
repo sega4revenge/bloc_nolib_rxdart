@@ -1,71 +1,61 @@
 
-import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:rxdart/rxdart.dart';
-import 'package:wallpaper/Config/ConfigBase.dart';
 import 'package:wallpaper/Config/Result.dart';
-import 'package:wallpaper/Model/Champion.dart';
+
 
 import '../APIClient.dart';
-import '../APIResponse.dart';
-import '../APIRouteConfigurable.dart';
 
-enum ChampionRequest {
-  listChampion
-}
+import '../APIRouteConfigurable.dart';
+import 'ChampionTarget.dart';
 
 class ChampionRouter implements APIRouteConfigurable {
 
-  final ChampionRequest request;
-  final Map<String, dynamic>? routeParams;
+  final ChampionTarget target;
 
-  ChampionRouter(this.request, { this.routeParams });
+  ChampionRouter(this.target);
 
   @override
   RequestOptions getConfig() {
-    switch (request) {
-      case ChampionRequest.listChampion:
+    switch (target.runtimeType) {
+      case ListChampionTarget:
         return RequestOptions(
             path: 'champion.json',
             method: APIMethod.get,
-            queryParameters: routeParams
+            queryParameters: target.routeParams()
+        );
+      case DetailChampionTarget:
+        var request = target as DetailChampionTarget;
+        return RequestOptions(
+            path: 'champion/${request.championId}.json',
+            method: APIMethod.get,
+            queryParameters: target.routeParams()
+        );
+
+      default:
+        return RequestOptions(
+            path: '',
         );
     }
   }
 }
 
 class ChampionService {
-  //Creating Singleton
-
   final APIClient client = APIClient();
 
   Future<Result> listChampion() async {
-    ChampionRouter router = ChampionRouter(ChampionRequest.listChampion);
+    ChampionRouter router = ChampionRouter(ListChampionTarget());
     var result = await client.request(
         route: router
     );
-    List<Champion> champions = [];
-    if (result is SuccessState) {
-
-      var jsonData = json.decode(result.value);
-      var name = jsonData['data'] as Map;
-      // var name = data['data'] as Map;
-      name.forEach((k,v){  // add .data here
-        Champion champion = Champion.fromJson(v);
-        champions.add(champion);
-      });
-    }
     return result;
   }
-}
 
-class ChampionRepo {
-  ChampionService service = ChampionService();
-
-
-
-  Stream<Result> listChampion() {
-    return Stream.fromFuture(service.listChampion());
+  Future<Result> detailChampion({required String championId}) async {
+    ChampionRouter router = ChampionRouter(DetailChampionTarget(championId));
+    var result = await client.request(
+        route: router
+    );
+    return result;
   }
 }

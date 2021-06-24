@@ -1,58 +1,49 @@
-import 'dart:async';
 import 'dart:convert';
-import 'package:disposebag/disposebag.dart';
-
-import 'package:dio/dio.dart';
-import 'package:flutter_bloc_pattern/flutter_bloc_pattern.dart';
-import 'package:wallpaper/Base/BaseProvider.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:wallpaper/Base/BaseBloc.dart';
 import 'package:wallpaper/Config/Result.dart';
 import 'package:wallpaper/Model/Champion.dart';
-import 'package:wallpaper/Network/Service/ChampionService.dart';
+import 'package:wallpaper/Network/Service/ChampionRepo.dart';
 import 'package:wallpaper/Screen/ListChampionScreen/ListChampionState.dart';
-// ignore_for_file: close_sinks
+
 typedef FunctionType<T> = T Function();
-class ListChampionBloc {
+class ListChampionBloc extends BaseBloc {
   //Initial
-  final ChampionRepo service = ChampionRepo();
   ListChampionMessage initialState = ListChampionSuccessMessage([]);
 
   //Input
   final PublishSubject<ListChampionAction> action = PublishSubject<ListChampionAction>();
-
-  //Output
-  final BehaviorSubject<bool> isLoading = BehaviorSubject<bool>.seeded(false);
-  final BehaviorSubject<ListChampionMessage> listChampion = BehaviorSubject<ListChampionMessage>();
+  final BehaviorSubject<ListChampionMessage> response = BehaviorSubject<ListChampionMessage>();
 
 
-  ListChampionBloc() {
+  ListChampionBloc(ChampionRepo repo) {
     //Init current state
-    listChampion.add(initialState);
+    response.add(initialState);
 
     //Listen stream
     action.listen((ListChampionAction event) {
-
       if (event is GetListChampion) {
-        listChampion.add(initialState);
-        var data = service.listChampion()
+        print("get data");
+        response.add(initialState);
+        var data = repo.listChampion()
             .doOnListen(() => {
               isLoading.add(true)
              })
             .doOnData((_) => isLoading.add(false))
             .map(_responseToMessage);
-        listChampion.addStream(data);
+        response.addStream(data);
       }
     });
   }
 
-  static ListChampionMessage _responseToMessage(Result result) {
+  ListChampionMessage _responseToMessage(Result result) {
     if (result is SuccessState) {
       List<Champion> champions = [];
       var jsonData = json.decode(result.value);
       var name = jsonData['data'] as Map;
       // var name = data['data'] as Map;
       name.forEach((k,v){  // add .data here
-        Champion champion = Champion.fromJson(v);
+        Champion champion = Champion().decode(v);
         champions.add(champion);
       });
       return ListChampionSuccessMessage(champions);
@@ -60,5 +51,11 @@ class ListChampionBloc {
       var error = result as ErrorState;
       return ListChampionErrorMessage(error.msg);
     }
+  }
+  @override
+  void dispose() {
+    super.dispose();
+    response.close();
+    action.close();
   }
 }

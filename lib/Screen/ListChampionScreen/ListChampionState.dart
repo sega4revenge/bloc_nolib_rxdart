@@ -12,17 +12,12 @@ class GetListChampion extends ListChampionAction {
 @immutable
 abstract class ListChampionMessage {}
 
-class ListChampionSuccessMessage implements ListChampionMessage {
+class ListChampionSuccessMessage extends ListChampionMessage {
   final List<Champion> listChampion;
-  const ListChampionSuccessMessage(this.listChampion);
+  ListChampionSuccessMessage(this.listChampion);
 }
 
-class ListChampionErrorMessage implements ListChampionMessage {
-
+class ListChampionErrorMessage extends ListChampionMessage {
   final String message;
-
-  const ListChampionErrorMessage(this.message);
-
-  @override
-  String toString() => 'ListChampionErrorMessage{message=$message}';
+  ListChampionErrorMessage(this.message);
 }

@@ -1,21 +1,20 @@
 import 'package:wallpaper/Network/TypeDecodable.dart';
-import 'package:wallpaper/model/Skin.dart';
+import 'package:wallpaper/Model/Skin.dart';
 class Champion implements Decodable<Champion> {
-  var id;
-  var key;
-  var name;
-  var title;
-  List<Skin>? skins ;
+  String id = '';
+  String key= '';
+  String name= '';
+  String title= '';
+  List<Skin> skins = [];
+
+  Champion();
 
   Champion.fromJson(Map<String, dynamic> json)
       : id = json['id'],
         key = json['key'],
         name = json['name'],
         title = json['title'],
-        skins = (json['skins'] == null) ? null : (json['skins'] as List).map((i) => Skin.fromJson(i)).toList();
-
-
-  Champion(this.id, this.key, this.name,this.title,this.skins);
+        skins = (json['skins'] as List).map((i) => Skin.fromJson(i)).toList();
 
   Map<String, dynamic> toJson() =>
       {'id': id, 'key': key, 'name': name,'title': title,'skins': skins};
@@ -26,7 +25,10 @@ class Champion implements Decodable<Champion> {
     name = data['name'] ;
     key = data['key'];
     title = data['title'];
-    skins = (data['skins'] == null) ? null : (data['skins'] as List).map((i) => Skin.fromJson(i)).toList();
+    var skinArray = data['skins'];
+    if (skinArray != null) {
+      skins = (skinArray as List).map((i) => Skin().decode(i)).toList();
+    }
     return this;
   }
 }

@@ -1,9 +1,22 @@
-class Skin {
-  var id;
-  var num;
-  var name;
-  bool chromas;
-  Skin(this.id, this.num, this.name,this.chromas);
+import 'package:wallpaper/Network/TypeDecodable.dart';
+
+
+class Skin implements Decodable<Skin>  {
+  String? id;
+  int? num;
+  String? name;
+  bool? chromas;
+
+  Skin();
+
+  @override
+  Skin decode(data) {
+    id = data['id'] ?? '';
+    num = data['num'] ?? 0;
+    name = data['name'] ?? '';
+    chromas = data['chromas'] ?? false;
+    return this;
+  }
 
   Skin.fromJson(Map<String, dynamic> json)
       : id = json['id'],
