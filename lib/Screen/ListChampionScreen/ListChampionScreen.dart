@@ -20,6 +20,13 @@ class ListChampionScreenPage extends StatefulWidget {
 
 class ListChampionScreenState extends State<ListChampionScreenPage> {
   @override
+  void didChangeDependencies() {
+    final bloc = Provider.of<ListChampionBloc>(context);
+    bloc.action.add(GetListChampion());
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bloc = Provider.of<ListChampionBloc>(context);
 
